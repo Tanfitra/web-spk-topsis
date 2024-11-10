@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
 
 const TOPSISCalculator = () => {
   const [alternatives, setAlternatives] = useState(['A1', 'A2']);
@@ -157,6 +158,7 @@ const TOPSISCalculator = () => {
 
   return (
     <div className="p-4 max-w-5xl mx-auto space-y-6">
+      <Analytics />
       <div className="bg-white rounded-lg shadow-md">
         <div className="p-6">
           <h2 className="text-2xl font-bold mb-4">TOPSIS Calculator</h2>
