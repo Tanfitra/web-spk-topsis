@@ -3,8 +3,8 @@ import { Plus, Trash2 } from 'lucide-react';
 
 const TOPSISCalculator = () => {
   const [alternatives, setAlternatives] = useState(['A1', 'A2']);
-  const [criteria, setCriteria] = useState(['C1', 'C2']);
-  const [weights, setWeights] = useState([0.5, 0.5]);
+  const [criteria, setCriteria] = useState(['C1', 'C2', 'C3']);
+  const [weights, setWeights] = useState([1, 1, 1]);
   const [types, setTypes] = useState(['benefit', 'benefit']);
   const [matrix, setMatrix] = useState([[0, 0], [0, 0]]);
   const [result, setResult] = useState(null);
@@ -156,7 +156,7 @@ const TOPSISCalculator = () => {
   };
 
   return (
-    <div className="p-4 max-w-4xl mx-auto space-y-6">
+    <div className="p-4 max-w-5xl mx-auto space-y-6">
       <div className="bg-white rounded-lg shadow-md">
         <div className="p-6">
           <h2 className="text-2xl font-bold mb-4">TOPSIS Calculator</h2>
