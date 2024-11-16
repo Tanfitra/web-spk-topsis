@@ -218,7 +218,7 @@ const TOPSISCalculator = () => {
       <Analytics />
       <div className="bg-white rounded-lg shadow-md">
         <div className="p-6">
-          <h2 className="text-2xl font-bold mb-4">TOPSIS Calculator</h2>
+          <h2 className="text-2xl font-bold mb-4">TOPSIS Decision Support System</h2>
           <div className="space-y-6">
           <div className="flex gap-4">
               <button 
@@ -319,7 +319,7 @@ const TOPSISCalculator = () => {
               onClick={calculate}
               className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
             >
-              Calculate TOPSIS
+              Calculate Rankings
             </button>
 
             {result && (
