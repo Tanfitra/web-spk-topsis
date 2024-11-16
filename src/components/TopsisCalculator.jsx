@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Download } from 'lucide-react';
 import { Analytics } from '@vercel/analytics/react';
 
 const TOPSISCalculator = () => {
   const [alternatives, setAlternatives] = useState(['A1', 'A2']);
   const [criteria, setCriteria] = useState(['C1', 'C2', 'C3']);
-  const [weights, setWeights] = useState([1, 1, 1]);
+  const [weights, setWeights] = useState([]);
   const [types, setTypes] = useState(['benefit', 'benefit']);
-  const [matrix, setMatrix] = useState([[0, 0], [0, 0]]);
+  const [matrix, setMatrix] = useState([[], []]);
   const [result, setResult] = useState(null);
 
   const addCriteria = () => {
     setCriteria([...criteria, `C${criteria.length + 1}`]);
-    setWeights([...weights, 0.5]);
     setTypes([...types, 'benefit']);
     setMatrix(matrix.map(row => [...row, 0]));
   };
@@ -28,7 +27,7 @@ const TOPSISCalculator = () => {
 
   const addAlternative = () => {
     setAlternatives([...alternatives, `A${alternatives.length + 1}`]);
-    setMatrix([...matrix, new Array(criteria.length).fill(0)]);
+    setMatrix([...matrix, new Array(criteria.length)]);
   };
 
   const removeAlternative = (index) => {
@@ -156,6 +155,64 @@ const TOPSISCalculator = () => {
     setTypes(newTypes);
   };
 
+  const exportToCSV = () => {
+    if (!result) return;
+
+    // Membuat header untuk file CSV
+    let csvContent = 'Alternative,Score,Rank\n';
+
+    // Menambahkan data hasil
+    result.forEach(item => {
+      csvContent += `${item.alternative},${item.score.toFixed(4)},${item.rank}\n`;
+    });
+
+    // Menambahkan data matrix keputusan
+    csvContent += '\nDecision Matrix:\n';
+    csvContent += `,${criteria.join(',')}\n`; // Header kriteria
+    matrix.forEach((row, idx) => {
+      csvContent += `${alternatives[idx]},${row.join(',')}\n`;
+    });
+
+    // Menambahkan informasi kriteria
+    csvContent += '\nCriteria Information:\n';
+    csvContent += 'Criteria,Weight,Type\n';
+    criteria.forEach((c, idx) => {
+      csvContent += `${c},${weights[idx]},${types[idx]}\n`;
+    });
+
+    // Membuat dan mengunduh file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'topsis_results.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportToJSON = () => {
+    if (!result) return;
+
+    const exportData = {
+      criteria: criteria,
+      weights: weights,
+      types: types,
+      alternatives: alternatives,
+      decisionMatrix: matrix,
+      results: result
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'topsis_results.json');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="p-4 max-w-5xl mx-auto space-y-6">
       <Analytics />
@@ -163,7 +220,7 @@ const TOPSISCalculator = () => {
         <div className="p-6">
           <h2 className="text-2xl font-bold mb-4">TOPSIS Calculator</h2>
           <div className="space-y-6">
-            <div className="flex gap-4">
+          <div className="flex gap-4">
               <button 
                 onClick={addCriteria}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -215,7 +272,7 @@ const TOPSISCalculator = () => {
                               value={weights[i]}
                               onChange={(e) => handleWeightChange(i, e.target.value)}
                               className="w-full p-1 border rounded"
-                              placeholder="Weight"
+                              placeholder="Bobot"
                             />
                           </div>
                         </th>
@@ -266,7 +323,7 @@ const TOPSISCalculator = () => {
             </button>
 
             {result && (
-              <div>
+              <div className="space-y-4">
                 <h3 className="text-lg font-medium mb-2">Results</h3>
                 <table className="min-w-full border-collapse border border-gray-200">
                   <thead className="bg-gray-50">
@@ -286,6 +343,21 @@ const TOPSISCalculator = () => {
                     ))}
                   </tbody>
                 </table>
+
+                <div className="flex gap-4 mt-4">
+                  <button 
+                    onClick={exportToCSV}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                  >
+                    <Download size={16} /> Export to CSV
+                  </button>
+                  <button 
+                    onClick={exportToJSON}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  >
+                    <Download size={16} /> Export to JSON
+                  </button>
+                </div>
               </div>
             )}
           </div>
