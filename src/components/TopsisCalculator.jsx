@@ -1,44 +1,20 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Download, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Download } from 'lucide-react';
 import { Analytics } from '@vercel/analytics/react';
 
 const TOPSISCalculator = () => {
   const [alternatives, setAlternatives] = useState(['A1', 'A2']);
   const [criteria, setCriteria] = useState(['C1', 'C2', 'C3']);
-  const [weights, setWeights] = useState([]);
-  const [types, setTypes] = useState(['benefit', 'benefit']);
-  const [matrix, setMatrix] = useState([[], []]);
+  const [weights, setWeights] = useState([1, 1, 1]);
+  const [types, setTypes] = useState(['benefit', 'benefit', 'benefit']);
+  const [matrix, setMatrix] = useState([[1, 1, 1], [1, 1, 1]]);
   const [result, setResult] = useState(null);
-  const [error, setError] = useState('');
-
-  const validateInputs = () => {
-    // Check if all weights are filled
-    const hasEmptyWeights = weights.length !== criteria.length || weights.some(w => w === undefined || w === null || w === '');
-    if (hasEmptyWeights) {
-      setError('Harap isi semua bobot kriteria');
-      return false;
-    }
-
-    // Check if all matrix values are filled
-    const hasEmptyMatrix = matrix.some(row => 
-      row.length !== criteria.length || row.some(value => 
-        value === undefined || value === null || value === ''
-      )
-    );
-    if (hasEmptyMatrix) {
-      setError('Harap isi semua nilai alternatif');
-      return false;
-    }
-
-    // Clear any existing error
-    setError('');
-    return true;
-  };
 
   const addCriteria = () => {
     setCriteria([...criteria, `C${criteria.length + 1}`]);
+    setWeights([...weights, 1]);
     setTypes([...types, 'benefit']);
-    setMatrix(matrix.map(row => [...row]));
+    setMatrix(matrix.map(row => [...row, 1]));
   };
 
   const removeCriteria = (index) => {
@@ -52,7 +28,7 @@ const TOPSISCalculator = () => {
 
   const addAlternative = () => {
     setAlternatives([...alternatives, `A${alternatives.length + 1}`]);
-    setMatrix([...matrix, new Array(criteria.length)]);
+    setMatrix([...matrix, new Array(criteria.length).fill(1)]);
   };
 
   const removeAlternative = (index) => {
@@ -141,10 +117,6 @@ const TOPSISCalculator = () => {
   };
 
   const calculate = () => {
-    if (!validateInputs()) {
-      return;
-    }
-
     const normalizedMatrix = normalize(matrix);
     const weightedMatrix = calculateWeighted(normalizedMatrix);
     const idealSolutions = findIdealSolutions(weightedMatrix);
@@ -164,7 +136,6 @@ const TOPSISCalculator = () => {
     });
     
     setResult(results);
-    setError('');
   };
 
   const handleMatrixChange = (i, j, value) => {
@@ -188,23 +159,29 @@ const TOPSISCalculator = () => {
   const exportToCSV = () => {
     if (!result) return;
 
+    // Membuat header untuk file CSV
     let csvContent = 'Alternative,Score,Rank\n';
+
+    // Menambahkan data hasil
     result.forEach(item => {
       csvContent += `${item.alternative},${item.score.toFixed(4)},${item.rank}\n`;
     });
 
+    // Menambahkan data matrix keputusan
     csvContent += '\nDecision Matrix:\n';
-    csvContent += `,${criteria.join(',')}\n`;
+    csvContent += `,${criteria.join(',')}\n`; // Header kriteria
     matrix.forEach((row, idx) => {
       csvContent += `${alternatives[idx]},${row.join(',')}\n`;
     });
 
+    // Menambahkan informasi kriteria
     csvContent += '\nCriteria Information:\n';
     csvContent += 'Criteria,Weight,Type\n';
     criteria.forEach((c, idx) => {
       csvContent += `${c},${weights[idx]},${types[idx]}\n`;
     });
 
+    // Membuat dan mengunduh file
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -244,13 +221,7 @@ const TOPSISCalculator = () => {
         <div className="p-6">
           <h2 className="text-2xl font-bold mb-4">TOPSIS Decision Support System</h2>
           <div className="space-y-6">
-            {error && (
-              <div className="flex items-center gap-2 p-4 text-red-800 bg-red-100 rounded-lg">
-              <AlertCircle className="w-5 h-5" />
-              <p>{error}</p>
-            </div>
-            )}
-            <div className="flex gap-4">
+          <div className="flex gap-4">
               <button 
                 onClick={addCriteria}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -303,7 +274,6 @@ const TOPSISCalculator = () => {
                               onChange={(e) => handleWeightChange(i, e.target.value)}
                               className="w-full p-1 border rounded"
                               placeholder="Bobot"
-                              required
                             />
                           </div>
                         </th>
@@ -336,7 +306,6 @@ const TOPSISCalculator = () => {
                               value={matrix[i][j]}
                               onChange={(e) => handleMatrixChange(i, j, e.target.value)}
                               className="w-full p-1 border rounded"
-                              required
                             />
                           </td>
                         ))}
